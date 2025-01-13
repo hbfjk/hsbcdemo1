@@ -19,7 +19,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import static org.mockito.Mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 
 /**
  *
@@ -33,9 +34,18 @@ public class TransactionServiceTest {
     
     @Mock
     private TransactionRepository transactionRepository;
+    
+    @Mock
+    private CacheManager cacheManager;
+    
+    @Mock
+    private Cache cache;
 
     @InjectMocks
     private TransactionService transactionService;
+    
+    @Mock
+    private AccountService accountService;
     
     private Account sourceAccount;
     private Account destinationAccount;
@@ -52,8 +62,9 @@ public class TransactionServiceTest {
         String destination = "destination";
         BigDecimal ammount = new BigDecimal(200.0);
 
-        when(accountRepository.findByAccountNumberForUpdate("source")).thenReturn(Optional.of(sourceAccount));
-        when(accountRepository.findByAccountNumberForUpdate("destination")).thenReturn(Optional.of(destinationAccount));
+        when(accountService.findByAccountNumberForUpdate("source")).thenReturn(sourceAccount);
+        when(accountService.findByAccountNumberForUpdate("destination")).thenReturn(destinationAccount);
+        when(cacheManager.getCache("accountCache")).thenReturn(cache);
 
         transactionService.processTransaction(sourceAccountNumber,destination,ammount);
         
@@ -68,9 +79,8 @@ public class TransactionServiceTest {
         BigDecimal ammount = new BigDecimal(2000.0);
 
         // Mock repository behavior
-        when(accountRepository.findByAccountNumberForUpdate("source")).thenReturn(Optional.empty());
-        when(accountRepository.findByAccountNumberForUpdate("destination")).thenReturn(Optional.of(destinationAccount));
-
+        when(accountService.findByAccountNumberForUpdate("source")).thenThrow(new IllegalArgumentException("Account not found"))
+;
         // Expecting exception due to insufficient funds
         Exception exception = assertThrows(Exception.class, () -> {
             transactionService.processTransaction(sourceAccountNumber,destination,ammount);
@@ -86,8 +96,9 @@ public class TransactionServiceTest {
         BigDecimal ammount = new BigDecimal(2000.0);
 
         // Mock repository behavior
-        when(accountRepository.findByAccountNumberForUpdate("source")).thenReturn(Optional.of(sourceAccount));
-        when(accountRepository.findByAccountNumberForUpdate("destination")).thenReturn(Optional.of(destinationAccount));
+        when(accountService.findByAccountNumberForUpdate("source")).thenReturn(sourceAccount);
+        when(accountService.findByAccountNumberForUpdate("destination")).thenReturn(destinationAccount);
+        when(cacheManager.getCache("accountCache")).thenReturn(cache);
 
         // Expecting exception due to insufficient funds
         Exception exception = assertThrows(Exception.class, () -> {

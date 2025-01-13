@@ -5,10 +5,12 @@
 package com.fangjk.hsbcdemo1.transaction.service;
 
 import com.fangjk.hsbcdemo1.transaction.model.Account;
+import com.fangjk.hsbcdemo1.transaction.model.Transaction;
 import com.fangjk.hsbcdemo1.transaction.repository.AccountRepository;
 import com.fangjk.hsbcdemo1.transaction.repository.TransactionRepository;
 import java.math.BigDecimal;
 import java.util.Optional;
+import org.junit.jupiter.api.AfterEach;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -41,6 +43,7 @@ public class TransactionServiceRetry2Test {
     
     private Account sourceAccount;
     private Account destinationAccount;
+    private Transaction transaction;
     
     @BeforeEach
     public void setUp() {
@@ -61,7 +64,7 @@ public class TransactionServiceRetry2Test {
         
         // Expecting exception due to non-exist account
         Exception exception = assertThrows(Exception.class, () -> {
-            transactionService.processTransaction("source123", "dest123", new BigDecimal(100.0));
+            transaction = transactionService.processTransaction("source123", "dest123", new BigDecimal(100.0));
         });
         
         // Fetch updated accounts from the repository
@@ -78,5 +81,15 @@ public class TransactionServiceRetry2Test {
         assertTrue(exception.getMessage().contains("transaction failed"));
         
         verify(transactionRepository, times(3)).save(any());
+    }
+    
+    @AfterEach
+    public void tearDown() {
+        accountRepository.delete(sourceAccount);
+        accountRepository.delete(destinationAccount);
+        
+        if(transaction != null) {
+            transactionRepository.delete(transaction);
+        }
     }
 }

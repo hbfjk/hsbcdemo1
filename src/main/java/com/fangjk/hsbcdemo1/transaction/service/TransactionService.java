@@ -9,12 +9,11 @@ import com.fangjk.hsbcdemo1.transaction.model.Transaction;
 import com.fangjk.hsbcdemo1.transaction.repository.AccountRepository;
 import com.fangjk.hsbcdemo1.transaction.repository.TransactionRepository;
 import java.math.BigDecimal;
-import java.util.Optional;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.CacheManager;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
-import org.springframework.retry.support.RetrySynchronizationManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,23 +25,27 @@ public class TransactionService {
 
     @Autowired
     private TransactionRepository transactionRepository;
+    
+    @Autowired
+    private AccountService accountService;
+    
+    @Autowired
+    private CacheManager cacheManager;
 
     // 处理交易
     @Transactional
     @Retryable(value = {RuntimeException.class}, maxAttempts = 3, backoff = @Backoff(delay = 1000))
-    public boolean processTransaction(String sourceAccountNumber, String destinationAccountNumber, BigDecimal amount) {
-        Optional<Account> sourceAccountOpt = accountRepository.findByAccountNumberForUpdate(sourceAccountNumber);
-        Optional<Account> destinationAccountOpt = accountRepository.findByAccountNumberForUpdate(destinationAccountNumber);
-        
-        if (!sourceAccountOpt.isPresent()) {
-            throw new RuntimeException("Account not found");
-        }
-        if (!destinationAccountOpt.isPresent()) {
+    public Transaction processTransaction(String sourceAccountNumber, String destinationAccountNumber, BigDecimal amount) {
+        Account sourceAccount, destinationAccount;
+        try {
+            sourceAccount = accountService.findByAccountNumberForUpdate(sourceAccountNumber);
+            destinationAccount = accountService.findByAccountNumberForUpdate(destinationAccountNumber);
+        } catch (IllegalArgumentException e) {
             throw new RuntimeException("Account not found");
         }
         
-        Account sourceAccount = sourceAccountOpt.get();
-        Account destinationAccount = destinationAccountOpt.get();
+        evictCache(sourceAccountNumber);
+        evictCache(destinationAccountNumber);
         
         int valid = amount.compareTo(sourceAccount.getBalance());
         if(valid > 0) {
@@ -66,7 +69,12 @@ public class TransactionService {
         transaction.setTimestamp(java.time.LocalDateTime.now());
 
         transactionRepository.save(transaction);
+        System.out.println("fangjkfangjkfangjk");
         
-        return true;
+        return transaction;
+    }
+    
+    public void evictCache(String key) {
+        cacheManager.getCache("accountCache").evict(key);
     }
 }

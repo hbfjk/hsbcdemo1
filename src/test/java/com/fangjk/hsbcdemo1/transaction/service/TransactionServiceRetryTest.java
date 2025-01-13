@@ -4,18 +4,11 @@
  */
 package com.fangjk.hsbcdemo1.transaction.service;
 
-import com.fangjk.hsbcdemo1.transaction.model.Account;
 import com.fangjk.hsbcdemo1.transaction.repository.AccountRepository;
-import com.fangjk.hsbcdemo1.transaction.repository.TransactionRepository;
 import java.math.BigDecimal;
-import java.util.Optional;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import static org.mockito.ArgumentMatchers.any;
-import org.mockito.Mockito;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -6,10 +6,11 @@ package com.fangjk.hsbcdemo1.transaction.model;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import java.io.Serializable;
 import java.math.BigDecimal;
 
 @Entity
-public class Account {
+public class Account implements Serializable {
     @Id
     private String accountNumber;
     private BigDecimal balance;

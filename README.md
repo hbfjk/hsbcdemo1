@@ -1,40 +1,70 @@
 # Financial Transaction Service
 
-## Overview
-
-This service processes financial transactions, updates account balances in real-time, and ensures that accounts never have negative balances.
-
-## Features
-
-- Process transactions with unique IDs, source, and destination accounts, amount, and timestamp.
-- Prevent negative account balances.
-- High availability with Kubernetes.
-- Retry mechanism for failed transactions.
-- Caching with Redis for performance.
-
 ## Requirements
 
-- JDK 11 or later
+- JDK 11+
 - Docker
-- Kubernetes cluster (AWS EKS, GCP GKE, Alibaba ACK)
-- Redis for caching
+- Kubernetes (AWS EKS, GCP GKE, or Alibaba ACK)
+- Redis (for caching)
+- PostgreSQL (for database)
 
-## Setup
+## How to Build and Run
 
-1. Clone the repository.
-2. Build the application with Maven: `mvn clean install`.
-3. Run the application locally: `mvn spring-boot:run`.
-4. Deploy to Kubernetes with `kubectl apply -f kubernetes/`.
+1. Clone the repository:
+```bash
+git clone <repo-url>
+cd financial-transaction-service
+```
+
+2. Build the project
+```
+mvn clean install
+```
+
+3. Run the application locally:
+```
+mvn spring-boot:run
+```
+
+4. Deploy to Kubernetes (AWS EKS example):
+```
+kubectl apply -f k8s/deployment.yaml
+kubectl apply -f k8s/service.yaml
+kubectl apply -f k8s/hpa.yaml
+```
+
+5. Docker
+```
+docker build -t transaction-service .
+docker run -p 8081:8081 transaction-service
+```
+
+## API Documentation
+### POST /api/transactions/transfer
+- sourceAccountNumber: Source account number
+- destinationAccountNumber: Destination account number
+- amount: Amount to transfer
+
+#### Response:
+
+- 200 OK: Transaction processed successfully
+- 400 Bad Request: Transaction failed (e.g., insufficient funds)
 
 ## Testing
+Run the unit tests with:
+```
+mvn test
+```
 
-- Unit tests: `mvn test`
-- Integration tests: Test database and cache interactions.
+## Performance Testing
+- Use Apache JMeter to perform load testing.
 
-## Architecture
 
-- **API Gateway**: Exposes REST endpoints.
-- **Transaction Service**: Processes transactions and updates account balances.
-- **Database**: MySQL (RDS or any managed database).
-- **Caching**: Redis for high-frequency transactions.
-- **Kubernetes**: High availability with HPA for scalability.
+
+
+
+
+
+
+
+

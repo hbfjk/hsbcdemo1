@@ -5,10 +5,12 @@
 package com.fangjk.hsbcdemo1.transaction.service;
 
 import com.fangjk.hsbcdemo1.transaction.model.Account;
+import com.fangjk.hsbcdemo1.transaction.model.Transaction;
 import com.fangjk.hsbcdemo1.transaction.repository.AccountRepository;
 import com.fangjk.hsbcdemo1.transaction.repository.TransactionRepository;
 import java.math.BigDecimal;
 import java.util.Optional;
+import org.junit.jupiter.api.AfterEach;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,6 +35,7 @@ public class TransactionServiceIntegrationTest {
     
     private Account sourceAccount;
     private Account destinationAccount;
+    private Transaction transaction;
     
     @BeforeEach
     public void setUp() {
@@ -46,7 +49,7 @@ public class TransactionServiceIntegrationTest {
     @Test
     void testProcessTransaction_Success() {
         // Process a valid transaction
-        transactionService.processTransaction("source123", "dest123", new BigDecimal(100.0));
+        transaction = transactionService.processTransaction("source123", "dest123", new BigDecimal(100.0));
 
         // Fetch updated accounts from the repository
         Optional<Account> updatedSourceAccountOpt = accountRepository.findById("source123");
@@ -58,5 +61,15 @@ public class TransactionServiceIntegrationTest {
         // Assert that the balances were correctly updated
         assertEquals(new BigDecimal("900.00"), updatedSourceAccount.getBalance(), "Source account balance should be updated");
         assertEquals(new BigDecimal("600.00"), updatedDestinationAccount.getBalance(), "Destination account balance should be updated");
+    }
+    
+    @AfterEach
+    public void tearDown() {
+        accountRepository.delete(sourceAccount);
+        accountRepository.delete(destinationAccount);
+        
+        if(transaction != null) {
+            transactionRepository.delete(transaction);
+        }
     }
 }

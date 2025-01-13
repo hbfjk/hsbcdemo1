@@ -1,7 +1,6 @@
-
-# Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
-# Click nbfs://nbhost/SystemFileSystem/Templates/Other/Dockerfile to edit this template
-
-FROM alpine:latest
-
-CMD ["/bin/sh"]
+FROM openjdk:21
+LABEL maintainer="fangjieke@163.com"
+COPY target/hsbcdemo1-1.0-SNAPSHOT.jar /app/transaction-service.jar
+ENTRYPOINT ["java", "-jar", "/app/transaction-service.jar"]
+EXPOSE 8080
+CMD ["java", "-jar", "/app/transaction-service.jar"]
