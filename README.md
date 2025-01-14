@@ -1,5 +1,24 @@
 # Financial Transaction Service
 
+- [Financial Transaction Service](#financial-transaction-service)
+  - [Requirements](#requirements)
+  - [Architecture](#architecture)
+  - [How to Build and Run locally](#how-to-build-and-run-locally)
+  - [How to Deploy on EKS:](#how-to-deploy-on-eks)
+  - [API Documentation](#api-documentation)
+    - [POST /api/accounts/{accountNumber}/balance](#post-apiaccountsaccountnumberbalance)
+      - [Example:](#example)
+      - [Response:](#response)
+    - [POST /api/transactions/transfer](#post-apitransactionstransfer)
+      - [Response:](#response-1)
+      - [Response:](#response-2)
+  - [Unit \& Integration Test](#unit--integration-test)
+  - [Mock account and transaction data](#mock-account-and-transaction-data)
+  - [Resilience Test](#resilience-test)
+  - [Performance Test](#performance-test)
+  - [TODO](#todo)
+
+
 ## Requirements
 
 - OpenJDK 21.0.4
