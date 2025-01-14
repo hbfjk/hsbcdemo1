@@ -15,7 +15,12 @@
   - [Unit \& Integration Test](#unit--integration-test)
   - [Mock account and transaction data](#mock-account-and-transaction-data)
   - [Resilience Test](#resilience-test)
+    - [Senario 1: Pod restart](#senario-1-pod-restart)
+    - [Senario 2: Node failure](#senario-2-node-failure)
+    - [Senario 3: Horizontal Pod Autoscaler](#senario-3-horizontal-pod-autoscaler)
   - [Performance Test](#performance-test)
+    - [Senario 1: Concurrent transfer without involving same account](#senario-1-concurrent-transfer-without-involving-same-account)
+    - [Senario 2: Concurrent transfer with involving same account](#senario-2-concurrent-transfer-with-involving-same-account)
   - [TODO](#todo)
 
 
@@ -206,13 +211,87 @@ Verify Redis have cache keys for the 400 accounts
 ```
 
 ## Resilience Test
-- Use Apache JMeter to perform load testing.
+### Senario 1: Pod restart
+1. Start below script, continue to sent request to query account balance.
+```
+#!/bin/bash
+URL="localhost:8081/api/accounts/12345/balance"
+while true; do
+  echo "$(date '+%Y-%m-%d %H:%M:%S') Sending request to $URL"
+  RESPONSE=$(curl --silent --location "$URL")
+  echo "Response: $RESPONSE"
+  sleep 0.5
+done
+```
+2. Force Pod Restart, delete one pod.
+```
+kubectl delete pod <pod-name>
+```
+3. Verified that pod can be recreated, and request eventually get to the new pod, by querying log:
+```
+Hibernate: select a1_0.account_number,a1_0.balance from hsbcdemo.account a1_0 where a1_0.account_number=?
+```
+
+### Senario 2: Node failure
+1. Start below script, continue to sent request to query account balance.
+```
+#!/bin/bash
+URL="localhost:8081/api/accounts/12345/balance"
+while true; do
+  echo "$(date '+%Y-%m-%d %H:%M:%S') Sending request to $URL"
+  RESPONSE=$(curl --silent --location "$URL")
+  echo "Response: $RESPONSE"
+  sleep 0.5
+done
+```
+2. Force shutdown one node.
+
+Using below command to get one transaction service pod hostIP
+```
+kubectl get pod transaction-service-5597f5f775-ljkxh -o jsonpath='{.status.hostIP}'
+172.31.11.97
+```
+On the AWS EC2 instance console, find the instance associated with the hostIP, then stop the instance.
+
+3. Verified that new Pod initiated on another health node and request eventually get to the new pod, by querying log:
+```
+Hibernate: select a1_0.account_number,a1_0.balance from hsbcdemo.account a1_0 where a1_0.account_number=?
+```
+
+### Senario 3: Horizontal Pod Autoscaler
+TODO: Verify that HPA works
 
 ## Performance Test
-- Use Apache JMeter to perform load testing.
+### Senario 1: Concurrent transfer without involving same account
 
+1. Run below command to simulate 50 concurrent user, to transfer 10 from mock-acocunt-<< n >> to mock-account-<< n+1 >>
+```
+jmeter -n -t .\jmeter-jmxs\No-Concurrent-Transfer.jmx -l .\jmeter-jmxs\No-Concurrent-Transfer.jtl -Dservername=<loadbancer_url> -Dserverport=80 -Jhttp.timeout=5000
+```
+2. Generate report from jtl file:
+```
+jmeter -g .\jmeter-jmxs\No-Concurrent-Transfer.jtl -o .\jmeter-jmxs\No-Concurrent-Transfer
+```
+3. Check the database with the account balance with first 100 accounts.
+4. Check jmeter-jmxs\No-Concurrent-Transfer\index.html for the report:
+![](images/report1.png)
+
+
+### Senario 2: Concurrent transfer with involving same account
+1. Run below command to simulate 50 concurrent user, to transfer 10 from mock-acocunt-<< 1 to 50 >> to mock-account-0
+```
+jmeter -n -t .\jmeter-jmxs\Transfer-To-Same-Account.jmx -l .\jmeter-jmxs\Transfer-To-Same-Account.jtl -Dservername=<loadbancer_url> -Dserverport=80 -Jhttp.timeout=5000
+```
+2. Generate report from jtl file:
+```
+jmeter -g .\jmeter-jmxs\Transfer-To-Same-Account.jtl -o .\jmeter-jmxs\Transfer-To-Same-Account
+```
+3. Check the database with the account balance with first 51 accounts.
+4. Check jmeter-jmxs\Transfer-To-Same-Account\index.html for the report:
+![](images/report2.png)
 
 ## TODO
 - Expose database and redis connection parameters as environment variable.
 - Enable https secure port
 - Provide front account search and transfer UI
+- Reduce server startup time, currently 30s+
