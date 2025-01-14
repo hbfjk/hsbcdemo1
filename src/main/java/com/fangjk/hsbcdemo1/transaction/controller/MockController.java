@@ -53,7 +53,9 @@ public class MockController {
             Account account = new Account();
             account.setAccountNumber("mock-account-"+i);
             //account.setAccountNumber(faker.finance().creditCard());
-            account.setBalance(BigDecimal.valueOf(faker.number().randomDouble(2, 1000, 5000))); // Random balance
+            //set with 5000 initially
+            account.setBalance(BigDecimal.valueOf(5000));
+            //account.setBalance(BigDecimal.valueOf(faker.number().randomDouble(2, 1000, 5000))); // Random balance
             accounts.add(account);
         }
 

@@ -21,7 +21,6 @@ public class AccountService {
     @Autowired
     private AccountRepository accountRepository;
     
-    @Cacheable(value = "accountCache", key = "#accountNumber")
     public Account findByAccountNumberForUpdate(String accountNumber) {
         return accountRepository.findByAccountNumberForUpdate(accountNumber)
                 .orElseThrow(() -> new IllegalArgumentException("Account not found"));

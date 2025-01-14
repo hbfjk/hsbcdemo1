@@ -6,11 +6,13 @@ package com.fangjk.hsbcdemo1.transaction.model;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
+@Table(name = "transaction")
 public class Transaction implements Serializable {
     
     @Id

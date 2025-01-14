@@ -9,8 +9,11 @@ import com.fangjk.hsbcdemo1.transaction.model.Transaction;
 import com.fangjk.hsbcdemo1.transaction.repository.AccountRepository;
 import com.fangjk.hsbcdemo1.transaction.repository.TransactionRepository;
 import java.math.BigDecimal;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
@@ -44,9 +47,6 @@ public class TransactionService {
             throw new RuntimeException("Account not found");
         }
         
-        evictCache(sourceAccountNumber);
-        evictCache(destinationAccountNumber);
-        
         int valid = amount.compareTo(sourceAccount.getBalance());
         if(valid > 0) {
              throw new RuntimeException("Insufficient balance");
@@ -69,12 +69,26 @@ public class TransactionService {
         transaction.setTimestamp(java.time.LocalDateTime.now());
 
         transactionRepository.save(transaction);
-        System.out.println("fangjkfangjkfangjk");
+        
+        evictCache(sourceAccountNumber);
+        evictCache(destinationAccountNumber);
+        
+        // 延时任务，第二次删除缓存
+        new Timer().schedule(new TimerTask() {
+            @Override
+            public void run() {
+                evictCache(sourceAccountNumber);
+                evictCache(destinationAccountNumber);
+            }
+        }, 1000);
         
         return transaction;
     }
     
     public void evictCache(String key) {
-        cacheManager.getCache("accountCache").evict(key);
+        Cache cache = cacheManager.getCache("accountCache");
+        if(cache != null) {
+            cache.evict(key);
+        }
     }
 }
