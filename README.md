@@ -186,12 +186,12 @@ for i in {0..399}; do  balance=$(curl --silent --request GET "<load_balance_url>
 Verify above command return result like below:
 ```
 Mock finished successfully
-Account mock-account-0 balance：1722.40
-Account mock-account-1 balance：3182.49
-Account mock-account-2 balance：1068.38
-Account mock-account-3 balance：3566.37
+Account mock-account-0 balance：5000.00
+Account mock-account-1 balance：5000.00
+Account mock-account-2 balance：5000.00
+Account mock-account-3 balance：5000.00
 ......
-Account mock-account-399 balance：3512.36
+Account mock-account-399 balance：5000.00
 ```
 Verify Redis have cache keys for the 400 accounts
 ```

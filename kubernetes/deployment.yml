@@ -18,7 +18,6 @@ spec:
       containers:
       - name: transaction-service
         image: hbfjk/transaction-service
-        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8080
         env:
