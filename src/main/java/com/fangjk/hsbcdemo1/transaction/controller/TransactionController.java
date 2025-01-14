@@ -28,7 +28,6 @@ public class TransactionController {
             transactionService.processTransaction(sourceAccountNumber, destinationAccountNumber, amount);
             return ResponseEntity.ok("Transaction processed successfully");
         } catch (Exception ex) {
-            // 如果发生异常，返回详细的错误信息
             ErrorResponse errorResponse = new ErrorResponse(
                     "Transaction failed",
                     Collections.singletonList(ex.getMessage()));

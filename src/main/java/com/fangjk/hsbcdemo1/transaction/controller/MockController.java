@@ -40,11 +40,6 @@ public class MockController {
         accountRepository.saveAll(accounts);
         transactionRepository.saveAll(transactions);
         
-        //load the account data into cache
-        for(Account a : accounts) {
-            accountService.getAccountByNumber(a.getAccountNumber());
-        }
-        
         return ResponseEntity.ok("Mock finished successfully");
     }
     

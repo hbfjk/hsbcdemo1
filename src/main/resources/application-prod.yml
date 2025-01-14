@@ -11,3 +11,7 @@ spring:
     driverClassName: org.postgresql.Driver
     username: postgres
     password: zhu88jie
+    
+logging:
+  level:
+    org.springframework.core.env: DEBUG

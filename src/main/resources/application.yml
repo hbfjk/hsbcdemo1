@@ -4,12 +4,13 @@ server:
   port: 8081
 spring:
   profiles:
-    active: default,mixed
+    active: default
   cache:
     type: redis
   redis:
     host: 127.0.0.1
     port: 6379
+    ssl: false
   retry:
     enabled: true
   h2:
