@@ -3,6 +3,7 @@
 - [Financial Transaction Service](#financial-transaction-service)
   - [Requirements](#requirements)
   - [Architecture](#architecture)
+    - [Key Design Choices:](#key-design-choices)
   - [How to Build and Run locally](#how-to-build-and-run-locally)
   - [How to Deploy on EKS:](#how-to-deploy-on-eks)
   - [API Documentation](#api-documentation)
@@ -34,7 +35,17 @@
 - AWS RDS PostgreSQL (for database)
 
 ## Architecture
+![](images/arch.png)
 
+The architecture of the Financial Transaction Service is designed to handle high-frequency transactions with high availability, scalability, and fault tolerance. It follows a microservices architecture using Spring Boot components, deployed in a Kubernetes-based environment. 
+
+### Key Design Choices:
+
+- PostgreSQL for Account and Transaction Data
+PostgreSQL is used as the relational database to store account information and transactions. It provides ACID-compliant transactions, ensuring data consistency. It supports advanced features like row-level locking which is useful when processing concurrent transactions. Relational databases provide strong consistency guarantees, which is crucial for financial data.
+
+- Redis for Caching
+Redis is chosen as the distributed caching solution as it is highly performant and supports in-memory storage, reducing response time for frequently accessed data like account balances. Redis ensures that requests for account balance are served quickly without querying the database repeatedly, thus improving system performance. For the consistence between database and redis, the current design is to use cache aside mode and when there is write/upate on the account in the database, it will evict corresponding cache after the database operation and use a double-delete strategy.
 
 ## How to Build and Run locally
 
